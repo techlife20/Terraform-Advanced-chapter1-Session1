@@ -1,0 +1,170 @@
+Terraform Advanced (Chapter 1)
+
+Two Sessions 
+1. Launch EC2 instance 
+2. Launch ec2 instance with Shell script
+
+Previous code
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+Divide the code seperate files each files contains specific parts
+
+1. provider - seperate file
+2. Main code - seperate file
+3. variables - seperate file
+
+Create IAM user which provide access and secret key
+
+provider.tf
+provider "aws" {
+  region     = "us-west-2"
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+
+Here Variables is using for reusing the code without edit the main code
+
+provider "aws {
+  region = "${var.AWS_REGION}"
+
+variable.tf
+Common syntax for variable
+
+variable AWS_REGION {
+  default = "us-west-2"
+}
+
+main code --- example instance.tf
+
+resource "aws_instance" "my inst" {
+  ami  = "${var.AMIS}"
+}
+
+variable AMIS {
+  default = "ami-0022f774911c1d690"
+}
+
+
+
+_______________________________________________________
+Session 
+
+Launching ec2 instance using the seperate codes
+provider.tf
+variable.tf
+main.tf ( instance.tf)
+terraform.tfvars
+
+1. Provider.tf ---------
+provider "aws" {
+  region     = "us-west-2"
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+
+syntax ---  region = "${var.AWS_REGION}"
+
+2. variable.tf 
+syntax
+
+variable AWS {
+  default = "_____"
+}
+
+3.terraform.tfvars
+
+access key and secret key
+
+4. main.tf -instance.tf
+
+resource "AWS" "refer" {
+  ami = "${var.AMIS}"
+}
+
+variable - input variable
+
+
+string ---map  -- it will call multiple region ami using the seperate mentioned region
+
+us-east-1 = ami-005de95e8ff495156
+ap-south-1 = ami-0cfedf42e63bba657 
+
+lookup - 
+_ __________________________ ---------------------------------------------------------------------------------------------------------
+
+2. 2. Launch ec2 instance with Shell script using provisioner 
+
+file 
+local-exec
+remote-exec
+
+how the connection happen between server to node ----ssh
+
+aws console - pem key - both public and private key is using for remote exec communication
+
+aws_key_pair ---
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+}
+
+public_key = "${file("/opt/file")}"
+public_key = "$ {file("${var.PUB_KEY_PATH}")}"
+
+var file
+mentioned the publi and pri keys
+
+main code -- key_name 
+need to call the key from main code to main code
+
+provisioner - file, remote-exec,connection
+
+syntax --
+
+provisioner "file" {
+    source      = "conf/myapp.conf"
+    destination = "/etc/myapp.conf"
+  }
+
+remote-exec
+
+provisioner "remote-exec" {
+    inline = [
+      "chmod +x script
+      "sudo .sh"
+connection ----
+connection {
+    type     = "ssh"
+    user     = "root"
+    password = var.root_password
+    host     = self.public_ip
+  }
+
+shell script to execute
+
+#! /bin/bash
+
+sudo apt update -y
+sudo apt install nginx -y
+sudo ufw app list
+sudo ufw allow 'Nginx HTTP'
+sudo ufw status
+sudo systemctl start nginx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
